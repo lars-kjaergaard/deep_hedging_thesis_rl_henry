@@ -45,44 +45,44 @@ S0=100.0               #starting price
 T=30/365                   #final time
 Tf = 45/365             #maturity of variance swap (not the same as T because of bergomi instability)
 costType='proportional' #type of transaction costs
-eps = 0.01             #transaction costs parameter (0.0 means no costs)
+eps = 0.0 # 0.01             #transaction costs parameter (0.0 means no costs)
 optionType='call'       #type of option (does nothing for now)
 strike = S0             #strike price of the call option
 K = strike
 
-#parameters of the rBergomi model (the real market)
-a = -0.4        #H-0.5 (Hurst param)
-H = 0.1
-v0Berg = 0.235**2   #xi
-etaBerg = 1.9
-rhoBerg = -0.9 
-
-#Heston parameters (fitted to the rBergomi parameters)
-lamHest = 3.9810393221890084   #alpha
-vbar = 0.09327160815810764     #b
-etaHest = 1.704203041025321    #sigma
-rhoHest = -0.716492483305834
-v0Hest = 0.05126161966697793 
-
-#Merton parameters (fitted to the rBergomi parameters)
-sigmaMert = 0.198
-vMert = 0.048924488315176824
-mMert = 0.0
-lamMert = 2.0829758475877087
+# #parameters of the rBergomi model (the real market)
+# a = -0.4        #H-0.5 (Hurst param)
+# H = 0.1
+# v0Berg = 0.235**2   #xi
+# etaBerg = 1.9
+# rhoBerg = -0.9
+#
+# #Heston parameters (fitted to the rBergomi parameters)
+# lamHest = 3.9810393221890084   #alpha
+# vbar = 0.09327160815810764     #b
+# etaHest = 1.704203041025321    #sigma
+# rhoHest = -0.716492483305834
+# v0Hest = 0.05126161966697793
+#
+# #Merton parameters (fitted to the rBergomi parameters)
+# sigmaMert = 0.198
+# vMert = 0.048924488315176824
+# mMert = 0.0
+# lamMert = 2.0829758475877087
 
 #Black Scholes parameter (fitted to analytic Heston price)
 sigmaBS = 0.208345
 
 
 #parameters of the machine learning model
-Ktrain =500000     #number of asset paths to be simulated and then used in training
+Ktrain = 500000     #number of asset paths to be simulated and then used in training
 testRatio=0.2          #number of asset paths to be used in testing as fraction of Ktrain
 numberOfSimulations=int(Ktrain*(1+testRatio))  #number of total simulations
 testSize = int(Ktrain*testRatio)                #number of test simulations
 m = 17                  #nodes hidden layers
 d = 2                   #number of hidden layers in strategy
 n = 1                   #dimension of price
-lr = 0.005#1e-2               #learning rate
+lr = 0.005 #1e-2               #learning rate
 batchSize = 256         #batch size
 epochs = 1             #epochs
 useBatchNorm=True      #status of batch normalization
@@ -114,37 +114,40 @@ seed=0
 # swapMert = assetsMert.getSwap(vMert)
 # payoffMert = callPayoff(K, SMert)
 
-# assetsBS = BlackScholes(T, sigmaBS, S0, N)
-# priceBS = assetsBS.blackScholesPriceCall(strike)
-# pathsBS = assetsBS.generatePaths(numberOfSimulations)
-# swapBS = np.full_like(pathsBS, sigmaBS*T)           
-# payoffBS = callPayoff(strike, pathsBS)
+assetsBS = BlackScholes(T, sigmaBS, S0, N)
+priceBS = assetsBS.blackScholesPriceCall(strike)
+pathsBS = assetsBS.generatePaths(numberOfSimulations)
+SBS = pathsBS
+swapBS = np.full_like(pathsBS, sigmaBS*T)
+payoffBS = callPayoff(strike, pathsBS)
 
 # np.savez("./data/rBergomi/rBergomiInput", SBerg=SBerg, swapBerg=swapBerg, lnSBerg=lnSBerg, vBerg=vBerg, payoffBerg=payoffBerg)
 # np.savez("./data/heston/hestonInput", SHest=SHest, swapHest=swapHest, lnSHest=lnSHest, vHest=vHest, payoffHest=payoffHest)
 #np.savez("./data/merton/mertonInput", SMert=SMert, swapMert=swapMert, lnSMert=lnSMert, vMert=vMert, payoffMert=payoffMert)
 #np.savez("./data/BS/BSInput", SBS=pathsBS, swapBS=swapBS, payoffBS=payoffBS)
 
-rBergomiData = np.load("./data/rBergomi/rBergomiInput.npz")
-SBerg = rBergomiData['SBerg']
-swapBerg = rBergomiData['swapBerg']
-lnSBerg=rBergomiData['lnSBerg']
-vBerg=rBergomiData['vBerg']
-payoffBerg=rBergomiData['payoffBerg']
+#### try to comment this out...
 
-hestonData = np.load("./data/heston/hestonInput.npz")
-SHest = hestonData['SHest']
-swapHest = hestonData['swapHest']
-lnSHest=hestonData['lnSHest']
-vHest=hestonData['vHest']
-payoffHest=hestonData['payoffHest']
-
-mertonData = np.load("./data/merton/mertonInput.npz")
-SMert = mertonData['SMert']
-swapMert = mertonData['swapMert']
-lnSMert=mertonData['lnSMert']
-vMert=mertonData['vMert']
-payoffMert=mertonData['payoffMert']
+# rBergomiData = np.load("./data/rBergomi/rBergomiInput.npz")
+# SBerg = rBergomiData['SBerg']
+# swapBerg = rBergomiData['swapBerg']
+# lnSBerg=rBergomiData['lnSBerg']
+# vBerg=rBergomiData['vBerg']
+# payoffBerg=rBergomiData['payoffBerg']
+#
+# hestonData = np.load("./data/heston/hestonInput.npz")
+# SHest = hestonData['SHest']
+# swapHest = hestonData['swapHest']
+# lnSHest=hestonData['lnSHest']
+# vHest=hestonData['vHest']
+# payoffHest=hestonData['payoffHest']
+#
+# mertonData = np.load("./data/merton/mertonInput.npz")
+# SMert = mertonData['SMert']
+# swapMert = mertonData['swapMert']
+# lnSMert=mertonData['lnSMert']
+# vMert=mertonData['vMert']
+# payoffMert=mertonData['payoffMert']
 
 # BSData = np.load("./data/BS/BSInput.npz")
 # SBS = BSData['SBS']
@@ -153,44 +156,45 @@ payoffMert=mertonData['payoffMert']
 
 ################################################################################
 
-priceAssetBerg = np.stack((SBerg),axis=1)
-priceSwapBerg = np.stack((swapBerg),axis=1)
-I1Berg = lnSBerg.transpose()
-I2Berg = vBerg.transpose()
-xAllBerg = createInput(priceAssetBerg, priceSwapBerg, I1Berg, I2Berg, payoffBerg, N)
-[xtrainBerg, xtestBerg] = trainTestSplit(xAllBerg, testSize=testSize)
+# priceAssetBerg = np.stack((SBerg),axis=1)
+# priceSwapBerg = np.stack((swapBerg),axis=1)
+# I1Berg = lnSBerg.transpose()
+# I2Berg = vBerg.transpose()
+# xAllBerg = createInput(priceAssetBerg, priceSwapBerg, I1Berg, I2Berg, payoffBerg, N)
+# [xtrainBerg, xtestBerg] = trainTestSplit(xAllBerg, testSize=testSize)
+#
+# priceAssetHest = np.stack((SHest),axis=1)
+# priceSwapHest = np.stack((swapHest),axis=1)
+# I1Hest = lnSHest.transpose()
+# I2Hest = vHest.transpose()
+# xAllHest = createInput(priceAssetHest, priceSwapHest, I1Hest, I2Hest, payoffHest, N)
+# [xtrainHest, xtestHest] = trainTestSplit(xAllHest, testSize=testSize)
+#
+# priceAssetMert = np.stack((SMert),axis=1)
+# priceSwapMert = np.stack((swapMert),axis=1)
+# I1Mert = lnSMert.transpose()
+# I2Mert = vMert.transpose()
+# xAllMert = createInput(priceAssetMert, priceSwapMert, I1Mert, I2Mert, payoffMert, N)
+# [xtrainMert, xtestMert] = trainTestSplit(xAllMert, testSize=testSize)
 
-priceAssetHest = np.stack((SHest),axis=1)
-priceSwapHest = np.stack((swapHest),axis=1)
-I1Hest = lnSHest.transpose()
-I2Hest = vHest.transpose()
-xAllHest = createInput(priceAssetHest, priceSwapHest, I1Hest, I2Hest, payoffHest, N)
-[xtrainHest, xtestHest] = trainTestSplit(xAllHest, testSize=testSize)
 
-priceAssetMert = np.stack((SMert),axis=1)
-priceSwapMert = np.stack((swapMert),axis=1)
-I1Mert = lnSMert.transpose()
-I2Mert = vMert.transpose()
-xAllMert = createInput(priceAssetMert, priceSwapMert, I1Mert, I2Mert, payoffMert, N)
-[xtrainMert, xtestMert] = trainTestSplit(xAllMert, testSize=testSize)
-
-# priceAssetBS = np.stack((SBS),axis=1)
-# priceSwapBS = np.stack((swapBS),axis=1)
-# I1BS = np.log(priceAssetBS)
-# I2BS = priceSwapBS/T
-# xAllBS = createInput(priceAssetBS, priceSwapBS, I1BS, I2BS, payoffBS, N)
-# [xtrainBS, xtestBS] = trainTestSplit(xAllBS, testSize=testSize)
-# [Strain, Stest] = trainTestSplit([SBS], testSize=testSize)
+priceAssetBS = np.stack(SBS, axis=1)
+priceSwapBS = np.stack(swapBS, axis=1)
+I1BS = np.log(priceAssetBS)
+I2BS = priceSwapBS/T
+xAllBS = createInput(priceAssetBS, priceSwapBS, I1BS, I2BS, payoffBS, N)
+[xtrainBS, xtestBS] = trainTestSplit(xAllBS, testSize=testSize)
+[Strain, Stest] = trainTestSplit([SBS], testSize=testSize)
 
 ################################################################################
-#concatenate input data from all models
-payoff3NN = np.hstack((payoffBerg,payoffHest,payoffMert))
-price3NN = np.hstack((priceAssetBerg,priceAssetHest,priceAssetMert))
-swap3NN = np.hstack((priceSwapBerg,priceSwapHest,priceSwapMert))
-I13NN = np.hstack((I1Berg,I1Hest,I1Mert))
-I23NN = np.hstack((I2Berg,I2Hest,I2Mert))
-xAll3NN = createInput(price3NN, swap3NN, I13NN, I23NN, payoff3NN, N)
-[xtrain3NN, xtest3NN] = trainTestSplit(xAll3NN, testSize=300000)
+# #concatenate input data from all models
+# payoff3NN = np.hstack((payoffBerg,payoffHest,payoffMert))
+# price3NN = np.hstack((priceAssetBerg,priceAssetHest,priceAssetMert))
+# swap3NN = np.hstack((priceSwapBerg,priceSwapHest,priceSwapMert))
+# I13NN = np.hstack((I1Berg,I1Hest,I1Mert))
+# I23NN = np.hstack((I2Berg,I2Hest,I2Mert))
+# xAll3NN = createInput(price3NN, swap3NN, I13NN, I23NN, payoff3NN, N)
+# [xtrain3NN, xtest3NN] = trainTestSplit(xAll3NN, testSize=300000)
 
 # payoff2NN = np.hstack((payoffBerg,payoffHest))
 # price2NN = np.hstack((priceAssetBerg,priceAssetHest))
@@ -237,24 +241,24 @@ xAll3NN = createInput(price3NN, swap3NN, I13NN, I23NN, payoff3NN, N)
 #BS experiments
 
 # modelBSpremium = deepModelPremium(N=N, m=m, eps=eps, useBatchNorm=useBatchNorm, weightInit=weightInit,
-#                   biasInit=biasInit, denseActivation=denseActivation, 
+#                   biasInit=biasInit, denseActivation=denseActivation,
 #                   outputActivation=outputActivation)
 # lossBSpremium = MSE(modelBSpremium.output[0])
 # #lossBSpremiu, = entropyLoss(modelBSpremium.output[0],1.0)
 # modelBSpremium.add_loss(lossBSpremium)
 # modelBSpremium.compile(optimizer=optimizer)
 # modelBSpremium.fit(x=xtrainBS, batch_size=batchSize, epochs=epochs, \
-#           validation_data=xtestBS, verbose=1)   
-
+#           validation_data=xtestBS, verbose=1)
+#
 # modelBS = deepModel(N=N, m=m, eps=eps, useBatchNorm=useBatchNorm, weightInit=weightInit,
-#                   biasInit=biasInit, denseActivation=denseActivation, 
+#                   biasInit=biasInit, denseActivation=denseActivation,
 #                   outputActivation=outputActivation)
 # #lossBS = MSE(modelBS.output)
 # lossBS = entropyLoss(modelBS.output,1.0)
 # modelBS.add_loss(lossBS)
 # modelBS.compile(optimizer=optimizer)
 # modelBS.fit(x=xtrainBS, batch_size=batchSize, epochs=epochs, \
-#           validation_data=xtestBS, verbose=1)     
+#           validation_data=xtestBS, verbose=1)
 
 ################################################################################
 #joint models 
@@ -311,25 +315,25 @@ xAll3NN = createInput(price3NN, swap3NN, I13NN, I23NN, payoff3NN, N)
 # modelMerton.fit(x=xtrainMert, batch_size=batchSize, epochs=epochs, \
 #           validation_data=xtestMert, verbose=1) 
 
-model3NN = deepModelVolume(N=N, m=m, eps=0.0, useBatchNorm=useBatchNorm, weightInit=weightInit,
-                  biasInit=biasInit, denseActivation=denseActivation, 
-                  outputActivation=outputActivation)
-loss3NN = MSE(model3NN.output[0])
-#loss3NN = entropyLoss(model3NN.output,1.0)
-model3NN.add_loss(loss3NN)
-model3NN.compile(optimizer=optimizer)
-model3NN.fit(x=xtrain3NN, batch_size=batchSize, epochs=epochs, \
-          validation_data=xtest3NN, verbose=1)
-    
-model3NNeps = deepModelVolume(N=N, m=m, eps=0.01, useBatchNorm=useBatchNorm, weightInit=weightInit,
-                  biasInit=biasInit, denseActivation=denseActivation, 
-                  outputActivation=outputActivation)
-loss3NN = MSE(model3NNeps.output[0])
-#loss3NN = entropyLoss(model3NN.output,1.0)
-model3NNeps.add_loss(loss3NN)
-model3NNeps.compile(optimizer=optimizer)
-model3NNeps.fit(x=xtrain3NN, batch_size=batchSize, epochs=epochs, \
-          validation_data=xtest3NN, verbose=1)
+# model3NN = deepModelVolume(N=N, m=m, eps=0.0, useBatchNorm=useBatchNorm, weightInit=weightInit,
+#                   biasInit=biasInit, denseActivation=denseActivation,
+#                   outputActivation=outputActivation)
+# loss3NN = MSE(model3NN.output[0])
+# #loss3NN = entropyLoss(model3NN.output,1.0)
+# model3NN.add_loss(loss3NN)
+# model3NN.compile(optimizer=optimizer)
+# model3NN.fit(x=xtrain3NN, batch_size=batchSize, epochs=epochs, \
+#           validation_data=xtest3NN, verbose=1)
+#
+# model3NNeps = deepModelVolume(N=N, m=m, eps=0.01, useBatchNorm=useBatchNorm, weightInit=weightInit,
+#                   biasInit=biasInit, denseActivation=denseActivation,
+#                   outputActivation=outputActivation)
+# loss3NN = MSE(model3NNeps.output[0])
+# #loss3NN = entropyLoss(model3NN.output,1.0)
+# model3NNeps.add_loss(loss3NN)
+# model3NNeps.compile(optimizer=optimizer)
+# model3NNeps.fit(x=xtrain3NN, batch_size=batchSize, epochs=epochs, \
+#           validation_data=xtest3NN, verbose=1)
 
 ################################################################################   
 #reusing models if necessary (many of these are outdated and only saved during testin phase)
@@ -342,10 +346,15 @@ model3NNeps.fit(x=xtrain3NN, batch_size=batchSize, epochs=epochs, \
 #modelBSpremium.save("./models/BS/BSpremium")
 #modelBS.save("./models/BS/BS")
 
-#modelBS = tf.keras.models.load_model("./models/BS/BS")
+#TODO: experiment with just loading it directly...
+modelBS = tf.keras.models.load_model("./models/BS/BS")
+modelBSpremium = tf.keras.models.load_model("./models/BS/BSpremium")
+
 # modelBergomi = tf.keras.models.load_model("./models/rBergomiModelTransactionCosts")
 # modelHeston = tf.keras.models.load_model("./models/HestonModelTransactionCosts")
 #modelMerton = tf.keras.models.load_model("./models/MertonModelNewTrans")
+
+print('models loaded...')
 
 ################################################################################
 #comparing solo models to joint models
@@ -420,47 +429,49 @@ model3NNeps.fit(x=xtrain3NN, batch_size=batchSize, epochs=epochs, \
 ################################################################################
 #comparing different hedges in the bs model
 
-# deltaBS = assetsBS.deltaHedgeCall(Stest[0], strike)
-# testPayoff = callPayoff(strike, Stest[0])
-# PnLDeltaHedge = assetsBS.PnL(Stest[0], testPayoff, deltaBS, eps)
+deltaBS = assetsBS.deltaHedgeCall(Stest[0], strike)
+testPayoff = callPayoff(strike, Stest[0])
+PnLDeltaHedge = assetsBS.PnL(Stest[0], testPayoff, deltaBS, eps)
 
-# resultsBS = modelBS(xtestBS).numpy().squeeze()
+resultsBS = modelBS(xtestBS).numpy().squeeze()
 
-# resultsBSpremium, premium = modelBSpremium(xtestBS)
-# resultsBSpremium = resultsBSpremium.numpy().squeeze()
-# premium = premium.numpy().squeeze().mean()
-# premiumAverge = resultsBSpremium.mean()
-
-
-# print("------------------------")
-# print("BS analytics price: ", priceBS)
-# print("BS MC price: ", payoffBS.mean())
-# print("Delta Hedge price: ", PnLDeltaHedge.mean())
-
-# print("NN premium: ", premium)
-# print("NN premium avergae", premiumAverge)
-# print("BS NN price: ", resultsBS.mean())
-
-# print("----------------")
-# print("Delta Hedge squared error: ", ((PnLDeltaHedge-PnLDeltaHedge.mean())**2).mean())
-# print("BSpremium NN squared error: ", ((resultsBSpremium-premiumAverge)**2).mean())
-# print("BS NN squared error: ", ((resultsBS-resultsBS.mean())**2).mean())
+resultsBSpremium, premium = modelBSpremium(xtestBS)
+resultsBSpremium = resultsBSpremium.numpy().squeeze()
+premium = premium.numpy().squeeze().mean()
+premiumAverge = resultsBSpremium.mean()
 
 
+print("------------------------")
+print("BS analytics price: ", priceBS)
+print("BS MC price: ", payoffBS.mean())
+print("Delta Hedge price: ", PnLDeltaHedge.mean())
 
-# fig_PnL = plt.figure(dpi= 125, facecolor='w')
-# fig_PnL.suptitle("Deep Hedging PnL BlackScholes \n", \
-#       fontweight="bold")
-# ax = fig_PnL.add_subplot()
-# ax.set_title("No transaction costs", \
-#       fontsize=8)
-# ax.set_xlabel("PnL")
-# ax.set_ylabel("Frequency")
-# ax.hist((resultsBSpremium, resultsBS-resultsBS.mean(), PnLDeltaHedge+priceBS), bins=30, \
-#           label=[ "NN premium", "NN simple", "Delta Hedge"])
-# ax.legend()
-# plt.savefig("./graphs/BlackScholes/PnL2")
-# plt.show()
+print("NN premium: ", premium)
+print("NN premium avergae", premiumAverge)
+print("BS NN price: ", resultsBS.mean())
+
+print("----------------")
+print("Delta Hedge squared error: ", ((PnLDeltaHedge-PnLDeltaHedge.mean())**2).mean())
+print("BSpremium NN squared error: ", ((resultsBSpremium-premiumAverge)**2).mean())
+print("BS NN squared error: ", ((resultsBS-resultsBS.mean())**2).mean())
+
+
+
+fig_PnL = plt.figure(dpi= 125, facecolor='w')
+fig_PnL.suptitle("Deep Hedging PnL BlackScholes LOADED \n", fontweight="bold")
+ax = fig_PnL.add_subplot()
+ax.set_title("No transaction costs", fontsize=8)
+ax.set_xlabel("PnL")
+ax.set_ylabel("Frequency")
+ax.hist((resultsBSpremium, resultsBS-resultsBS.mean(), PnLDeltaHedge+priceBS), bins=30, label=[ "NN premium",
+                                                                                                "NN simple",
+                                                                                                "Delta Hedge"])
+ax.legend()
+plt.savefig("./graphs/BlackScholes/PnL2_lk")
+plt.show()
+
+print('time ', )
+
 
 ################################################################################
 #track trading volume
@@ -486,23 +497,23 @@ model3NNeps.fit(x=xtrain3NN, batch_size=batchSize, epochs=epochs, \
 # print("Merton squared error: ", ((resultsMerton-resultsMerton.mean())**2).mean())
 # print("Merton avg volume: ", volumeMerton)
 
-results3NNBergomi = model3NN(xtestBerg)[1].numpy().squeeze().mean()
-results3NNBergomieps = model3NNeps(xtestBerg)[1].numpy().squeeze().mean()
-
-results3NNHeston = model3NN(xtestHest)[1].numpy().squeeze().mean()
-results3NNHestoneps = model3NNeps(xtestHest)[1].numpy().squeeze().mean()
-
-results3NNMerton = model3NN(xtestMert)[1].numpy().squeeze().mean()
-results3NNMertoneps = model3NNeps(xtestMert)[1].numpy().squeeze().mean()
-
-print("Berg 3NN trading volume: ", results3NNBergomi)
-print("Bergeps 3NN trading volume: ", results3NNBergomieps)
-
-print("Hest 3NN trading volume: ", results3NNHeston)
-print("Hesteps 3NN trading volume: ", results3NNHestoneps)
-
-print("Mert 3NN trading volume: ", results3NNMerton)
-print("Merteps 3NN trading volume: ", results3NNMertoneps)
+# results3NNBergomi = model3NN(xtestBerg)[1].numpy().squeeze().mean()
+# results3NNBergomieps = model3NNeps(xtestBerg)[1].numpy().squeeze().mean()
+#
+# results3NNHeston = model3NN(xtestHest)[1].numpy().squeeze().mean()
+# results3NNHestoneps = model3NNeps(xtestHest)[1].numpy().squeeze().mean()
+#
+# results3NNMerton = model3NN(xtestMert)[1].numpy().squeeze().mean()
+# results3NNMertoneps = model3NNeps(xtestMert)[1].numpy().squeeze().mean()
+#
+# print("Berg 3NN trading volume: ", results3NNBergomi)
+# print("Bergeps 3NN trading volume: ", results3NNBergomieps)
+#
+# print("Hest 3NN trading volume: ", results3NNHeston)
+# print("Hesteps 3NN trading volume: ", results3NNHestoneps)
+#
+# print("Mert 3NN trading volume: ", results3NNMerton)
+# print("Merteps 3NN trading volume: ", results3NNMertoneps)
 
 ################################################################################
 #results of the 2NN
